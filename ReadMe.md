@@ -997,6 +997,125 @@ func main() {
 }
 ```
 
+### Interface values
+
+* Interface values can be thought of as a tuple of a value and a concrete type: `(value, type)`.
+
+* An interface value holds a value of a specific underlying concrete type.
+
+* Calling a method on an interface value executes the method of the same name on its underlying
+type.
+
+```go
+import "fmt"
+
+type I interface {
+    M()
+}
+
+func describe(i I) {
+    fmt.Printf("Value: %v, Type: %T\n", i, i)
+}
+
+type T struct {
+    S string
+}
+
+func (t *T) M() {
+    fmt.Println("From method (*T) M():", t.S)
+}
+
+type F float64
+
+func (f F) M() {
+    fmt.Println("From method (F) M():", f)
+}
+
+func main() {
+    var i I
+
+    i = &T{"Hello"}
+    describe(i)         // Value: &{Hello}, Type: *main.T)
+    i.M()               // From method (*T) M(): Hello
+
+    i = F(math.Pi)
+    describe(i)         // Value: 3.141592653589793, Type: main.F
+    i.M()               // From method (F) M(): 3.141592653589793
+}
+```
+
+### Interface values with nil underlying values
+
+* If the concrete value inside the interface itself is `nil`, the method will be called with a
+`nil` receiver.
+
+* A `nil` interface value holds neither value nor concrete type.
+
+* Calling a method on a `nil` interface is a run-time error because there is no type inside the interface tuple to indicate which *concrete* method to call.
+
+```go
+type I interface {
+    M()
+}
+
+func describe(i I) {
+    fmt.Printf("Value: %v, Type: %T\n", i, i)
+}
+
+type T struct {
+    S string
+}
+
+func (t *T) M() {
+    if t == nil {
+        fmt.Println("<nil>")
+        return
+    }
+    fmt.Println(t.S)
+}
+
+func main() {
+    var i I
+    describe(i)         // Value: <nil>, Type: <nil>
+    // i.M()            // panic: runtime error
+
+    var t *T
+
+    i = t
+    describe(i)         // Value: <nil>, Type: *main.T
+    i.M()               // <nil>
+
+    i = &T{"hello"}     // Value: &{hello}, Type: *main.T
+    describe(i)
+    i.M()               // hello
+}
+```
+
+### The empty interface
+
+* The interface type that specifies zero methods is known as the *empty interface*: `interface{}`
+
+* An empty interface may hold values of *any* type.
+
+* Empty interfaces are used by code that handles values of unknown type.
+
+```go
+func main() {
+    var i interface{}
+    describe(i)         // Value: <nil>, Type: <nil>
+
+    i = 42
+    describe(i)         // Value: 42, Type: int
+
+    i = "hello"
+    describe(i)         // Value: hello, Type: string
+}
+
+func describe(i interface{}) {
+    fmt.Printf("Value: %v, Type: %T\n", i, i)
+}
+```
+
 ## Tools
 
 The main Go distribution includes tools for building, testing, and analyzing code:
