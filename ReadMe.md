@@ -64,7 +64,7 @@ func main() {
 
 ### Named return values
 
-* A return statement without arguments returns the named return values ("naked" return).
+* A `return` statement without arguments returns the named return values ("naked" return).
 
 ```go
 func split(sum int) (x, y int) {
@@ -81,7 +81,10 @@ func main() {
 
 ### Variables
 
-* A var declaration can include initializers, one per variable.
+* A `var` declaration can include initializers, one per variable.
+
+* If an initializer is present, the type can be omitted;
+the variable will take the type of the initializer.
 
 * *Inside a function*, the `:=` short assignment statement can be used in place of a `var`
 declaration with implicit type.
@@ -123,6 +126,12 @@ float32 float64
 complex64 complex128
 ```
 
+* The `int`, `uint`, and `uintptr`:
+  * 32 bits wide on 32-bit systems
+  * 64 bits wide on 64-bit systems
+
+* Рекомендуется по умолчанию использовать `int` в качестве integer value.
+
 * Variables declared without an explicit initial value are given their *zero value*.
 
 The zero value is:
@@ -155,7 +164,7 @@ func main() {
 
 Some numeric conversions:
 
-```text
+```go
 var i int = 42
 var f float64 = float64(i)
 var u uint = uint(f)
@@ -163,7 +172,7 @@ var u uint = uint(f)
 
 Or, put more simply:
 
-```text
+```go
 i := 42
 f := float64(i)
 u := uint(f)
@@ -209,13 +218,212 @@ func main() {
 
 ## Flow control statements. `for`, `if`, `else`, `switch` and `defer`
 
+### For
+
+```go
+func main() {
+    sum := 0
+    for i := 0; i < 10; i++ {
+        sum += i
+    }
+    fmt.Println(sum)    // 45
+}
+```
+
+The init and post statements are optional (аналог `while` из других языков):
+
+```go
+func main() {
+    sum := 1
+    for sum < 1000 {     // Эквивалентно: for ; sum < 1000; {
+        sum += sum
+    }
+    fmt.Println(sum)    // 1024
+}
+```
+
+Бесконечный цикл:
+
+```go
+func main() {
+    for {
+    }
+}
+```
+
+### If
+
+```go
+func sqrt(x float64) string {
+    if x < 0 {
+        return sqrt(-x) + "i"
+    }
+    return fmt.Sprint(math.Sqrt(x))
+}
+
+func main() {
+    fmt.Println(sqrt(2), sqrt(-4))      // 1.4142135623730951 2i
+}
+```
+
+### If with a short statement
+
+* The `if` statement can start with a short statement to execute before the condition.
+
+* Variables declared by the statement are only in scope until the end of the `if`.
+
+```go
+func pow(x, n, lim float64) float64 {
+    if v := math.Pow(x, n); v < lim {
+        return v
+    }
+    return lim
+}
+
+func main() {
+    fmt.Println(
+        pow(3, 2, 10),      // 9     (из 3**2 < 10 -> 9)
+        pow(3, 3, 20),      // 20    (из 3**3 > 20 -> 20)
+    )
+}
+```
+
+### Switch
+
+* `break` в Go не нужен.
+
+```go
+import "runtime"
+
+func main() {
+    fmt.Print("Go runs on ")
+    switch os := runtime.GOOS; os {
+    case "darwin":
+        fmt.Println("OS X.")
+    case "linux":
+        fmt.Println("Linux.")
+    default:
+        fmt.Printf("%s.\n", os)
+    }
+}
+```
+
+```go
+import "time"
+
+func main() {
+fmt.Println("When's Saturday?")
+    today := time.Now().Weekday()
+    switch time.Saturday {
+    case today + 0:
+        fmt.Println("Today.")
+    case today + 1:
+        fmt.Println("Tomorrow.")
+    case today + 2:
+        fmt.Println("In two days.")
+    default:
+        fmt.Println("Too far away.")
+    }
+}
+```
+
+* Switch without a condition is the same as `switch true`.
+
+```go
+func main() {
+    t := time.Now()
+    switch {
+    case t.Hour() < 12:
+        fmt.Println("Good morning!")
+    case t.Hour() < 17:
+        fmt.Println("Good afternoon.")
+    default:
+        fmt.Println("Good evening.")
+    }
+}
+```
+
+### Defer
+
+* A defer statement defers the execution of a function until the surrounding function returns.
+
+* The deferred call's arguments are evaluated immediately, but the function call
+is not executed until the surrounding function returns.
+
+```go
+func main() {
+    defer fmt.Println("world")     // сработает на выходе из main
+    fmt.Println("hello")
+}
+// hello
+// world
+```
+
+* Deferred calls are executed in last-in-first-out order.
+
+<table>
+<tr>
+<td>
+
+```go
+func main() {
+    fmt.Println("counting")
+    for i := 0; i < 10; i++ {
+        defer fmt.Println(i)
+    }
+    fmt.Println("done")
+}
+```
+
+</td>
+<td>
+
+```text
+counting
+done
+9
+8
+7
+6
+5
+4
+3
+2
+1
+0
+```
+
+</td>
+</tr>
+</table>
+
 ## More types. `struct`, `slice`, and `map`
 
 ### Pointers
 
-Go has no pointer arithmetic.
+* A pointer holds the memory address of a value.
 
-Pointer zero value is `nil`.
+* Go has no pointer arithmetic.
+
+* The type `*T` is a pointer to a `T` value. Its zero value is `nil`.
+
+```go
+var p *int
+```
+
+* The `&` operator generates a pointer to its operand.
+
+```go
+i := 42
+p = &i
+```
+
+* The `*` operator denotes the pointer's underlying value.
+
+```go
+fmt.Println(*p) // read i through the pointer p
+*p = 21         // set i through the pointer p
+```
 
 ```go
 func main() {
@@ -244,7 +452,7 @@ Read new j: 73
 
 * A `struct` is a collection of fields.
 
-* Struct fields are accessed using a dot.
+* Struct fields are accessed using a `.` (dot).
 
 * Struct fields can be accessed through a struct pointer.
 
@@ -293,6 +501,14 @@ func main() {
 
 ### Arrays
 
+* The type `[n]T` is an array of `n` values of type `T`.
+
+Declare a variable a as an array of ten integers:
+
+```go
+var a [10]int
+```
+
 * Arrays cannot be resized.
 
 ```go
@@ -314,6 +530,16 @@ func main() {
 
 * Dynamically-sized
 
+* The type `[]T` is a slice with elements of type `T`.
+
+* A slice is formed by:
+
+```text
+a[low : high]
+- low bound included in range
+- high bound excluded from range
+```
+
 ```go
 func main() {
     primes := [6]int{2, 3, 5, 7, 11, 13}
@@ -327,6 +553,8 @@ func main() {
 ```
 
 ### Slices are like references to arrays
+
+* A slice does not store any data, it just describes a section of an underlying array.
 
 * Changing the elements of a slice modifies the corresponding elements of its underlying array.
 
@@ -351,6 +579,20 @@ func main() {
 ```
 
 ### Slice literals
+
+A slice literal is like an array literal without the length.
+
+This is an array literal:
+
+```go
+[3]bool{true, true, false}
+```
+
+And this creates the same array as above, then builds a slice that references it:
+
+```go
+[]bool{true, true, false}
+```
 
 ```go
 func main() {
@@ -379,6 +621,20 @@ func main() {
 
 * Low bound - default value - 0
 * High bound - default value - length of the slice
+* For the array
+
+```go
+var a [10]int
+```
+
+these slice expressions are equivalent:
+
+```go
+a[0:10]
+a[:10]
+a[0:]
+a[:]
+```
 
 ```go
 func main() {
@@ -403,6 +659,9 @@ func main() {
 
 * The *capacity* of a slice is the number of elements in the underlying array,
 counting from the first element in the slice.
+
+* The length and capacity of a slice `s` can be obtained using the expressions
+`len(s)` and `cap(s)`.
 
 ```go
 func main() {
@@ -448,6 +707,19 @@ func main() {
 * The `make` function allocates a zeroed array and returns a slice that refers to that array.
 
 ```go
+a := make([]int, 5)    // len(a)=5
+```
+
+To specify a capacity, pass a third argument to make:
+
+```go
+b := make([]int, 0, 5)      // len(b)=0, cap(b)=5
+
+b = b[:cap(b)]              // len(b)=5, cap(b)=5
+b = b[1:]                   // len(b)=4, cap(b)=4
+```
+
+```go
 func main() {
     a := make([]int, 5)
     printSlice("a", a)      // a len=5 cap=5 [0 0 0 0 0]
@@ -468,6 +740,8 @@ func printSlice(s string, x []int) {
 ```
 
 ### Slices of slices
+
+* Slices can contain any type, including other slices.
 
 ```go
 import "strings"
@@ -494,6 +768,16 @@ func main() {
 ```
 
 ### Appending to a slice
+
+Append new elements to a slice:
+
+```go
+func append(s []T, vs ...T) []T
+```
+
+* If the backing array of `s` is too small to fit all the given values
+a bigger array will be allocated. The returned slice will point to the newly
+allocated array.
 
 ```go
 func main() {
@@ -665,6 +949,11 @@ func main() {
 
   If `key` is in `m`, `ok` is `true`. If not, `ok` is `false`.
 
+  If `key` is not in the map, then `elem` is the zero value for the map's element type.
+
+* If elem or ok have not yet been declared you could use a short declaration
+form: `elem, ok := m[key]`
+
 ```go
 func main() {
     m := make(map[string]int)
@@ -775,7 +1064,7 @@ type Vertex struct {
 
 // Поведение будет аналогично функции: func Abs(v Vertex) float64
 // Vertex - receiver argument
-func (v Vertex) Abs() float64 {               
+func (v Vertex) Abs() float64 {
     return math.Sqrt(v.X * v.X + v.Y * v.Y)
 }
 
@@ -1113,6 +1402,158 @@ func main() {
 
 func describe(i interface{}) {
     fmt.Printf("Value: %v, Type: %T\n", i, i)
+}
+```
+
+### Type assertions
+
+* A *type assertion* provides access to an interface value's underlying concrete value.
+
+```text
+t := i.(T)
+```
+
+* If `i` does not hold a `T`, the statement will trigger a panic.
+
+To test whether an interface value holds a specific type:
+
+```text
+t, ok := i.(T)
+```
+
+* If `i` holds a `T`, then `t` will be the underlying value and ok will be `true`.
+
+* If not, ok will be `false` and `t` will be the zero value of type `T`, and no panic occurs.
+
+```go
+func main() {
+    var i interface{} = "hello"
+
+    s := i.(string)
+    fmt.Println(s)          // hello
+
+    s, ok := i.(string)
+    fmt.Println(s, ok)      // hello true
+
+    f, ok := i.(float64)
+    fmt.Println(f, ok)      // 0 false
+
+    f = i.(float64)         // panic: interface conversion
+    fmt.Println(f)
+}
+```
+
+### Type switches
+
+* A *type switch* is a construct that permits several type assertions in series.
+
+```text
+switch v := i.(type) {
+case T:
+    // here v has type T
+case S:
+    // here v has type S
+default:
+    // no match; here v has the same type as i
+}
+```
+
+```go
+func do(i interface{}) {
+    switch v := i.(type) {
+    case int:
+        fmt.Printf("Twice %v is %v\n", v, v*2)
+    case string:
+        fmt.Printf("%q is %v bytes long\n", v, len(v))
+    default:
+        fmt.Printf("I don't know about type %T!\n", v)
+    }
+}
+
+func main() {
+    do(21)          // Twice 21 is 42
+    do("hello")     // "hello" is 5 bytes long
+    do(true)        // I don't know about type bool!
+}
+```
+
+### Stringers
+
+* `Stringer` (`fmt` package) - один из самых распространненых интерфейсов.
+
+* A `Stringer` is a type that can describe itself as a string.
+
+* The `fmt` package (and many others) look for this interface to print values.
+
+```text
+type Stringer interface {
+    String() string
+}
+```
+
+```go
+import "fmt"
+
+type Person struct {
+    Name string
+    Age  int
+}
+
+func (p Person) String() string {
+    return fmt.Sprintf("%v (%v years)", p.Name, p.Age)
+}
+
+func main() {
+    a := Person{"Arthur Dent", 42}
+    z := Person{"Zaphod Beeblebrox", 9001}
+    fmt.Println(a, z)       // Arthur Dent (42 years) Zaphod Beeblebrox (9001 years)
+}
+```
+
+### Errors
+
+* The `error` type is a built-in interface similar to `fmt.Stringer`:
+
+```go
+type error interface {
+    Error() string
+}
+```
+
+* Functions often return an `error` value, and calling code should handle errors by testing
+whether the error equals `nil`.
+
+* A nil `error` denotes success; a non-nil `error` denotes failure.
+
+```go
+i, err := strconv.Atoi("42")
+if err != nil {
+    fmt.Printf("couldn't convert number: %v\n", err)
+    return
+}
+fmt.Println("Converted integer:", i)
+```
+
+```go
+import "time"
+
+type MyError struct {
+    When time.Time
+    What string
+}
+
+func (e *MyError) Error() string {
+    return fmt.Sprintf("at %v, %s", e.When, e.What)
+}
+
+func run() error {
+    return &MyError{time.Now(), "it didn't work",}
+}
+
+func main() {
+    if err := run(); err != nil {
+        fmt.Println("Error:", err)      // Error: at 2009-11-10 23:00:00 +0000 UTC m=+0.000000001, it didn't work
+    }
 }
 ```
 
