@@ -1604,3 +1604,268 @@ func main() {
 // n = 0 err = EOF b = [101 97 100 101 114 33 32 82]
 // b[:n] = ""
 ```
+
+### Images
+
+* [Package image](https://go.dev/pkg/image/#Image) defines:
+
+```go
+package image
+
+type Image interface {
+    ColorModel() color.Model
+    Bounds() Rectangle
+    At(x, y int) color.Color
+}
+```
+
+* Note: the `Rectangle` return value of the `Bounds` method is actually an `image.Rectangle`,
+as the declaration is inside package `image`.
+
+* The `color.Color` and `color.Model` types are also interfaces, but we'll ignore that by using
+the predefined implementations `color.RGBA` and `color.RGBAModel`. These interfaces and types
+are specified by the [image/color package](https://go.dev/pkg/image/color/).
+
+```go
+import "image"
+
+func main() {
+    m := image.NewRGBA(image.Rect(0, 0, 100, 100))
+    fmt.Println(m.Bounds())             // (0,0)-(100,100)
+    fmt.Println(m.At(0, 0).RGBA())      // 0 0 0 0
+}
+```
+
+## Generics
+
+* Go functions can work on multiple types using type parameters.
+
+* The type parameters of a function appear between brackets, before the function's arguments.
+
+```go
+func Index[T comparable](s []T, x T) int
+```
+
+This declaration means that `s` is a slice of any type `T` that fulfills the built-in constraint
+`comparable`. `x` is also a value of the same type.
+
+`comparable` is a useful constraint that makes it possible to use the `==` and `!=` operators
+on values of the type. In this example, we use it to compare a value to all slice elements
+until a match is found. This `Index` function works for any type that supports comparison.
+
+```go
+// Index returns the index of x in s, or -1 if not found.
+func Index[T comparable](s []T, x T) int {
+    for i, v := range s {
+        // v and x are type T, which has the comparable
+        // constraint, so we can use == here.
+        if v == x {
+            return i
+        }
+    }
+    return -1
+}
+
+func main() {
+    // Index works on a slice of ints
+    si := []int{10, 20, 15, -10}
+    fmt.Println(Index(si, 15))          // 2
+
+    // Index also works on a slice of strings
+    ss := []string{"foo", "bar", "baz"}
+    fmt.Println(Index(ss, "hello"))     // -1
+}
+```
+
+### Generic types
+
+* Go also supports generic types.
+
+* A type can be parameterized with a type parameter.
+
+Example. A simple type declaration for a singly-linked list holding any type of value:
+
+```go
+// List represents a singly-linked list that holds values of any type.
+type List[T any] struct {
+    next *List[T]
+    val  T
+}
+
+func main() {
+}
+```
+
+Generic List example with methods:
+
+```go
+import (
+    "fmt"
+    "strings"
+)
+
+// List represents a singly-linked list that holds values of any type.
+type List[T any] struct {
+    next *List[T]
+    val  T
+}
+
+func (l *List[T]) String() string {
+    var sb strings.Builder
+    l.addVal(&sb)
+    nxt := l.next
+    for nxt != nil {
+        sb.WriteString(", ")
+        nxt.addVal(&sb)
+        nxt = nxt.next
+    }
+    return sb.String()
+}
+
+func (l *List[T]) addVal(sb *strings.Builder) {
+    str := fmt.Sprintf("%v", l.val)
+    sb.WriteString(str)
+}
+
+func (prev *List[T]) Add(item T) *List[T] {
+    next := List[T]{nil, item}
+    prev.next = &next
+    return &next
+}
+
+func main() {
+    lst1 := List[int]{nil, 1}
+    lst1.Add(2).Add(3)
+    fmt.Println(lst1.String())          // 1, 2, 3
+
+    lst2 := List[float64]{nil, 1.1}
+    lst2.Add(1.2).Add(1.3)
+    fmt.Println(lst2.String())          // 1.1, 1.2, 1.3
+}
+```
+
+## Concurrency
+
+### Goroutines
+
+* A *goroutine* is a lightweight thread managed by the Go runtime.
+
+Command `go f(x, y, z)` starts a new goroutine running `f(x, y, z)`
+
+The evaluation of `f`, `x`, `y`, and `z` happens in the current goroutine and the execution
+of `f` happens in the new goroutine.
+
+Goroutines run in the *same address space*, so access to shared memory must be synchronized.
+The `sync` package provides useful primitives, although you won't need them much in Go as
+there are other primitives. (See the next slide.)
+
+
+<table>
+<tr>
+<td>
+
+```go
+import "time"
+
+func say(s string) {
+    for i := 0; i < 5; i++ {
+        time.Sleep(100 * time.Millisecond)
+        fmt.Println(s)
+    }
+}
+
+func main() {
+    go say("world")
+    say("hello")
+}
+```
+
+</td>
+<td>
+
+```text
+hello
+world
+world
+hello
+hello
+world
+world
+hello
+hello
+```
+
+</td>
+</tr>
+</table>
+
+### Channels
+
+* Channels are a typed conduit (канал) through which you can send and receive values with the
+channel operator `<-`
+
+The data flows in the direction of the arrow:
+
+```go
+ch <- v    // Send v to channel ch.
+v := <-ch  // Receive from ch, and assign value to v.
+```
+
+Like `map`s and `slice`s, channels must be created before use:
+
+```go
+ch := make(chan int)
+```
+
+* By default, sends and receives block until the other side is ready.
+This allows goroutines to synchronize without explicit locks or condition variables.
+
+The example code sums the numbers in a slice, distributing the work between two goroutines.
+Once both goroutines have completed their computation, it calculates the final result.
+
+```go
+func sum(s []int, c chan int) {
+    sum := 0
+    for _, v := range s {
+        sum += v
+    }
+    c <- sum                    // send sum to c
+}
+
+func main() {
+    s := []int{7, 2, 8, -9, 4, 0}
+
+    c := make(chan int)
+    go sum(s[:len(s)/2], c)
+    go sum(s[len(s)/2:], c)
+    x, y := <-c, <-c            // receive from c
+
+    fmt.Println("x =", x, "y =", y, "x + y =", x+y)      // x = -5 y = 17 x + y = 12
+}
+```
+
+### Buffered Channels
+
+* Channels can be *buffered*.
+
+* Provide the buffer length as the second argument to make to initialize a buffered channel:
+
+```go
+ch := make(chan int, 100)
+```
+
+* Sends to a buffered channel block only when the buffer is full.
+
+* Receives block when the buffer is empty.
+
+```go
+func main() {
+    ch := make(chan int, 2)
+    ch <- 1
+    ch <- 2
+    //ch <- 3            // fatal error: all goroutines are asleep - deadlock!
+    fmt.Println(<-ch)    // 1
+    fmt.Println(<-ch)    // 2
+    //fmt.Println(<-ch)  // fatal error: all goroutines are asleep - deadlock!
+}
+```
