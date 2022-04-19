@@ -1759,7 +1759,6 @@ Goroutines run in the *same address space*, so access to shared memory must be s
 The `sync` package provides useful primitives, although you won't need them much in Go as
 there are other primitives. (See the next slide.)
 
-
 <table>
 <tr>
 <td>
@@ -1869,3 +1868,207 @@ func main() {
     //fmt.Println(<-ch)  // fatal error: all goroutines are asleep - deadlock!
 }
 ```
+
+### Range and Close
+
+* A sender can `close` a channel to indicate that no more values will be sent.
+
+* Receivers can test whether a channel has been closed by assigning a second parameter
+to the receive expression:
+
+```go
+v, ok := <-ch
+```
+
+ok is `false` if there are no more values to receive and the channel is closed.
+
+* Only the **sender** should close a channel, never the receiver.
+
+* Sending on a closed channel will cause a panic.
+
+* Channels aren't like files; you don't usually need to close them.
+
+* Closing is only necessary when the receiver must be told there are no more values coming,
+such as to terminate a range loop.
+
+The loop `for i := range c` receives values from the channel repeatedly until it is closed:
+
+<table>
+<tr>
+<td>
+
+```go
+func fibonacci(n int, c chan int) {
+    x, y := 0, 1
+    for i := 0; i < n; i++ {
+        c <- x
+        x, y = y, x+y
+    }
+    close(c)
+}
+
+func main() {
+    c := make(chan int, 10)
+    go fibonacci(cap(c), c)
+    for i := range c {
+        fmt.Println(i)
+    }
+}
+```
+
+</td>
+<td>
+
+```text
+0
+1
+1
+2
+3
+5
+8
+13
+21
+34
+```
+
+</td>
+</tr>
+</table>
+
+### Select
+
+* The `select` statement lets a goroutine wait on multiple communication operations.
+
+* A `select` blocks until one of its cases can run, then it executes that case. It chooses one at random if multiple are ready.
+
+<table>
+<tr>
+<td>
+
+```go
+func fibonacci(c, quit chan int) {
+    fmt.Println("Start fibonacci")
+    x, y := 0, 1
+    for {
+        select {
+        case c <- x:
+            x, y = y, x+y
+        case <-quit:
+        fmt.Println("quit")
+        return
+        }
+    }
+}
+
+func main() {
+    c := make(chan int)
+    quit := make(chan int)
+    go func() {
+        fmt.Println("Start func")
+        for i := 0; i < 10; i++ {
+            fmt.Println(<-c)
+        }
+        quit <- 0
+        fmt.Println("End func")
+    }()
+
+    fmt.Println("Main 1")
+    fibonacci(c, quit)
+    fmt.Println("Main 2")
+}
+```
+
+</td>
+<td>
+
+```text
+Main 1
+Start fibonacci
+Start func
+0
+1
+1
+2
+3
+5
+8
+13
+21
+34
+quit
+Main 2
+```
+
+</td>
+</tr>
+</table>
+
+### Default Selection
+
+* The `default` case in a `select` is run if no other case is ready.
+
+Use a `default` case to try a send or receive without blocking:
+
+```go
+select {
+case i := <-c:
+    // use i
+default:
+    // receiving from c would block
+}
+```
+
+<table>
+<tr>
+<td>
+
+```go
+import (
+    "fmt"
+    "time"
+)
+
+func main() {
+    tick := time.Tick(100 * time.Millisecond)
+    boom := time.After(500 * time.Millisecond)
+    for {
+        select {
+        case <-tick:
+            fmt.Println("tick.")
+        case <-boom:
+            fmt.Println("BOOM!")
+            return
+        default:
+            fmt.Println("    .")
+            time.Sleep(50 * time.Millisecond)
+        }
+    }
+}
+```
+
+</td>
+<td>
+
+```text
+    .
+    .
+tick.
+    .
+    .
+tick.
+    .
+    .
+tick.
+    .
+    .
+tick.
+    .
+    .
+tick.
+BOOM!
+```
+
+</td>
+</tr>
+</table>
