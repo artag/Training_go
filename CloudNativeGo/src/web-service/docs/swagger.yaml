@@ -1,0 +1,110 @@
+definitions:
+  main.HTTPError:
+    properties:
+      code:
+        example: 400
+        type: integer
+      message:
+        example: status bad request
+        type: string
+    type: object
+  main.album:
+    properties:
+      artist:
+        type: string
+      id:
+        type: string
+      price:
+        type: number
+      title:
+        type: string
+    type: object
+info:
+  contact: {}
+paths:
+  /api/v1/albums:
+    get:
+      consumes:
+      - application/json
+      description: List all albums
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/main.album'
+      summary: List albums
+      tags:
+      - albums
+    post:
+      consumes:
+      - application/json
+      description: Add new album
+      parameters:
+      - description: Album to add
+        in: body
+        name: album
+        required: true
+        schema:
+          $ref: '#/definitions/main.album'
+      produces:
+      - application/json
+      responses:
+        "201":
+          description: Created
+          schema:
+            $ref: '#/definitions/main.album'
+      summary: Add new album
+      tags:
+      - albums
+  /api/v1/albums/{id}:
+    delete:
+      consumes:
+      - application/json
+      description: Delete album by ID
+      parameters:
+      - description: Album ID
+        in: path
+        name: id
+        required: true
+        type: integer
+      produces:
+      - application/json
+      responses:
+        "204":
+          description: No Content
+          schema:
+            $ref: '#/definitions/main.HTTPError'
+        "404":
+          description: Not Found
+          schema:
+            $ref: '#/definitions/main.HTTPError'
+      summary: Delete album
+      tags:
+      - albums
+    get:
+      consumes:
+      - application/json
+      description: Get album by ID
+      parameters:
+      - description: Account ID
+        in: path
+        name: id
+        required: true
+        type: integer
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/main.album'
+        "404":
+          description: Not Found
+          schema:
+            $ref: '#/definitions/main.HTTPError'
+      summary: Show album
+      tags:
+      - albums
+swagger: "2.0"

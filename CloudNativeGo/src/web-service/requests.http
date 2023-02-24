@@ -1,0 +1,30 @@
+@host = localhost
+@port=8080
+
+### Получить информацию по всем альбомам
+GET http://{{host}}:{{port}}/api/v1/albums
+
+### Получить информацию по одному альбому
+GET http://{{host}}:{{port}}/api/v1/albums/1
+GET http://{{host}}:{{port}}/api/v1/albums/2
+GET http://{{host}}:{{port}}/api/v1/albums/3
+
+### Получить информацию по одному альбому (not found)
+GET http://{{host}}:{{port}}/api/v1/albums/4
+
+### Добавить альбом
+POST http://{{host}}:{{port}}/api/v1/albums
+Accept: application/json
+Content-Type: application/json
+
+{
+    "id": "4",
+    "title": "The Modern Sound of Betty Carter",
+    "artist": "Betty Carter",
+    "price": 49.99
+}
+
+### Удалить альбом
+DELETE http://{{host}}:{{port}}/api/v1/albums/2
+
+
