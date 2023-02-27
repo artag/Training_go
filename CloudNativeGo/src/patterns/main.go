@@ -2,34 +2,47 @@ package main
 
 import (
 	"context"
+	"errors"
 	"fmt"
-	"io/ioutil"
-	"net/http"
+	"time"
 )
 
+var count int = 0
+
 func makeRequest(ctx context.Context) (string, error) {
-	resp, err := http.Get("http://localhost:8080/albums")
-	if err != nil {
-		panic(err)
-	}
-	defer resp.Body.Close()
+	count++
 
-	body, err := ioutil.ReadAll(resp.Body)
-	if err != nil {
-		return "", err
+	if count <= 3 {
+		return "", errors.New("some error happens")
+	} else {
+		return "some value", nil
 	}
-
-	s := string(body)
-	return s, nil
 }
 
 func main() {
-	ctx := context.TODO()
-	breaker := Breaker(makeRequest, 3)
-	res, err := breaker(ctx)
+	testBreaker()
+}
 
-	if err != nil {
-		panic(err)
+func testBreaker() {
+	fmt.Println("========== Breaker")
+	fmt.Println()
+
+	ctx := context.Background()
+	breaker := Breaker(makeRequest, 3)
+
+	for i := 0; i < 10; i++ {
+		res, err := breaker(ctx)
+
+		if err != nil {
+			fmt.Printf("Error: '%s'\n", err)
+			time.Sleep(500 * time.Millisecond)
+			continue
+		}
+
+		fmt.Println(res)
+		break
 	}
-	fmt.Println(res)
+
+	res2, _ := breaker(ctx)
+	fmt.Println(res2)
 }
