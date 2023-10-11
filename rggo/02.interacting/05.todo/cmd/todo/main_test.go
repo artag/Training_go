@@ -9,7 +9,8 @@ import (
 	"os/exec"       // To execute external commands
 	"path/filepath" // To deal with directory paths
 	"runtime"       // To identify the running operating system
-	"testing"       // To access testing tools
+	"strings"
+	"testing" // To access testing tools
 
 	globals "rggo/interacting/todo/cmd"
 )
@@ -17,6 +18,15 @@ import (
 var (
 	binName = "todo"
 )
+
+func TestSplit(t *testing.T) {
+	t1 := "task1"
+	t2 := "task2"
+	txt := fmt.Sprintf("%s\n%s", t1, t2)
+	split := strings.Split(txt, "\n")
+	assertString("task1", split[0], t)
+	assertString("task2", split[1], t)
+}
 
 // Call build tool.
 // Execute the tests.
@@ -137,6 +147,34 @@ func TestTodoCLI(t *testing.T) {
 		expected := fmt.Sprintf(
 			"X 1: %s        \n",
 			task2)
+
+		actual := string(out)
+		assertString(expected, actual, t)
+	})
+
+	// Subtest 6
+	task3 := "test task3"
+	task4 := "test task4"
+	stdin := fmt.Sprintf("%s\n%s", task3, task4)
+	t.Run("AddNewTasksFromSTDIN", func(t *testing.T) {
+		cmd := exec.Command(cmdPath, "-add")
+		cmdStdIn, err := cmd.StdinPipe()
+		if err != nil {
+			t.Fatal(err)
+		}
+		io.WriteString(cmdStdIn, stdin)
+		cmdStdIn.Close()
+
+		if err := cmd.Run(); err != nil {
+			t.Fatal(err)
+		}
+
+		out := listCommand(cmdPath, t)
+		expected := fmt.Sprintf(
+			"X 1: %s        \n"+
+				"  2: %s        \n"+
+				"  3: %s        \n",
+			task2, task3, task4)
 
 		actual := string(out)
 		assertString(expected, actual, t)

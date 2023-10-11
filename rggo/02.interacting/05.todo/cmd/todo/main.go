@@ -58,12 +58,16 @@ func main() {
 		saveListToFile(l)
 
 	case *add:
-		t, err := getTask(os.Stdin, flag.Args()...)
+		tasks, err := getTask(os.Stdin, flag.Args()...)
 		if err != nil {
 			fmt.Fprintln(os.Stderr, err)
 			os.Exit(1)
 		}
-		l.Add(t)
+
+		for _, task := range tasks {
+			l.Add(task)
+		}
+
 		saveListToFile(l)
 
 	case *delete > 0:
@@ -105,20 +109,29 @@ func saveListToFile(l *todo.List) {
 }
 
 // Get description for a new task. From arguments or STDIN
-func getTask(r io.Reader, args ...string) (string, error) {
+func getTask(r io.Reader, args ...string) ([]string, error) {
+	// Read arguments from cmd
 	if len(args) > 0 {
-		return strings.Join(args, " "), nil
+		return []string{(strings.Join(args, " "))}, nil
 	}
 
+	// Read stdin. Can be multiline.
 	s := bufio.NewScanner(r)
-	s.Scan()
+	var lines []string
+	for {
+		s.Scan()
+
+		line := s.Text()
+		if len(line) == 0 {
+			break
+		}
+
+		lines = append(lines, line)
+	}
+
 	if err := s.Err(); err != nil {
-		return "", err
+		return nil, err
 	}
 
-	if len(s.Text()) == 0 {
-		return "", fmt.Errorf("task cannot be blank")
-	}
-
-	return s.Text(), nil
+	return lines, nil
 }
