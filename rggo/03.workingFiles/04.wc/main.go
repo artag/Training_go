@@ -7,6 +7,7 @@ import (
 	"fmt"
 	"io"
 	"os"
+	"strings"
 )
 
 const (
@@ -28,13 +29,37 @@ func main() {
 		os.Exit(1)
 	}
 
-	input, err := selectInput(stdin, file)
-	if err != nil {
-		fmt.Fprintln(os.Stderr, err)
+	// Select input and count
+	var result int = 0
+	if *stdin {
+		result = countDataStream(os.Stdin, bytes, lines)
+	} else if *file != "" {
+		split := strings.Split(*file, " ")
+		result = countMultipleFiles(split, bytes, lines)
+	} else {
+		err := errors.New("unknown work mode")
+		fmt.Fprint(os.Stderr, err)
 		os.Exit(1)
 	}
-	defer input.Close()
 
+	fmt.Println(result)
+}
+
+func countMultipleFiles(files []string, bytes *bool, lines *bool) int {
+	var result int = 0
+	for _, f := range files {
+		input, err := os.Open(f)
+		if err != nil {
+			fmt.Fprint(os.Stderr, err)
+			os.Exit(1)
+		}
+		defer input.Close()
+		result += countDataStream(input, bytes, lines)
+	}
+	return result
+}
+
+func countDataStream(input *os.File, bytes *bool, lines *bool) int {
 	var result = 0
 	if *bytes {
 		result = count(input, countBytes)
@@ -44,19 +69,7 @@ func main() {
 		result = count(input, countWords)
 	}
 
-	fmt.Println(result)
-}
-
-func selectInput(stdin *bool, file *string) (*os.File, error) {
-	if *stdin {
-		return os.Stdin, nil
-	}
-
-	if *file != "" {
-		return os.Open(*file)
-	}
-
-	return nil, errors.New("unknown flag")
+	return result
 }
 
 func count(r io.Reader, countOptions int) int {
