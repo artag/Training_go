@@ -128,7 +128,7 @@ func TestRunArchive(t *testing.T) {
 			}
 
 			if len(filesArchived) != tc.nArchive {
-				t.Errorf("Exp ected: %d archived files\nActual: %d archived files\n",
+				t.Errorf("Expected: %d archived files\nActual: %d archived files\n",
 					tc.nArchive, len(filesArchived))
 			}
 		})
