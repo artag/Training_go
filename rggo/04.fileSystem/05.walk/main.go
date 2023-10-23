@@ -28,6 +28,8 @@ type config struct {
 	log io.Writer
 	// archive directory
 	archive string
+	// from last modified datetime
+	from string
 }
 
 func main() {
@@ -41,6 +43,7 @@ func main() {
 	// Filter options
 	ext := flag.String("ext", "", "File extension to filter out")
 	size := flag.Int64("size", 0, "Minimum file size")
+	from := flag.String("from", "", "Last modified datetime to filter out")
 	flag.Parse()
 
 	var (
@@ -67,6 +70,7 @@ func main() {
 		del:     *del,
 		log:     f,
 		archive: *archive,
+		from:    *from,
 	}
 
 	if err := run(*root, os.Stdout, c); err != nil {
@@ -84,7 +88,12 @@ func run(root string, out io.Writer, cfg config) error {
 				return err
 			}
 
-			if filterOut(path, cfg.ext, cfg.size, info) {
+			filter, err := filterOut(path, cfg, info)
+			if err != nil {
+				return err
+			}
+
+			if filter {
 				return nil
 			}
 

@@ -8,13 +8,36 @@ import (
 	"os"
 	"path/filepath"
 	"strings"
+	"time"
 )
 
-func filterOut(path, ext string, minSize int64, info os.FileInfo) bool {
-	if info.IsDir() || info.Size() < minSize {
-		return true
+const (
+	timeParseLayout = "2006-01-02T15:04:05"
+)
+
+func filterOut(path string, cfg config, info os.FileInfo) (bool, error) {
+	if info.IsDir() || info.Size() < cfg.size {
+		return true, nil
 	}
 
+	from := cfg.from
+	if from != "" {
+		location, err := time.LoadLocation("Local")
+		if err != nil {
+			return true, err
+		}
+
+		parsed, err := time.ParseInLocation(timeParseLayout, from, location)
+		if err != nil {
+			return false, err
+		}
+
+		if parsed.Local().Unix() > info.ModTime().Local().Unix() {
+			return true, nil
+		}
+	}
+
+	ext := cfg.ext
 	if ext != "" {
 		fileExt := strings.TrimLeft(filepath.Ext(path), ".")
 		trimExt := strings.Split(ext, " ")
@@ -25,10 +48,10 @@ func filterOut(path, ext string, minSize int64, info os.FileInfo) bool {
 			}
 		}
 
-		return excludeFile
+		return excludeFile, nil
 	}
 
-	return false
+	return false, nil
 }
 
 func archiveFile(dstDir, root, path string) error {

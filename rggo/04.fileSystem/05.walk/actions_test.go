@@ -27,7 +27,13 @@ func TestFilterOut(t *testing.T) {
 				t.Fatal(err)
 			}
 
-			f := filterOut(tc.file, tc.ext, tc.minSize, info)
+			cfg := config{ext: tc.ext, size: tc.minSize}
+
+			f, err := filterOut(tc.file, cfg, info)
+			if err != nil {
+				t.Fatal(err)
+			}
+
 			if f != tc.expected {
 				t.Errorf("Expected: '%t'\nActual '%t'", tc.expected, f)
 			}
