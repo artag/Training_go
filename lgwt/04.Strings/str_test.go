@@ -107,6 +107,60 @@ func ExampleContainsAny() {
 	// false
 }
 
+// func ContainsRune(s string, r rune) bool
+
+func ExampleContainsRune() {
+	// Finds whether a string contains a particular Unicode code point.
+	// The code point for the lowercase letter "a", for example, is 97.
+	fmt.Println(strings.ContainsRune("aardvark", 97))
+	fmt.Println(strings.ContainsRune("timeout", 97))
+
+	// Output:
+	// true
+	// false
+}
+
+// func Count
+
+func TestCount(t *testing.T) {
+	t.Run(
+		"count is case sensitive",
+		func(t *testing.T) {
+			actual := strings.Count("Alabama", "a")
+			AssertInt(t, 3, actual)
+		})
+}
+
+func ExampleCount() {
+	fmt.Println(strings.Count("cheese", "e"))
+	fmt.Println(strings.Count("five", ""))  // before & after each rune (4 + 1)
+	fmt.Println(strings.Count("seven", "")) // 6
+
+	// Output:
+	// 3
+	// 5
+	// 6
+}
+
+// func Cut(s, sep string) (before, after string, found bool)
+
+func ExampleCut() {
+	show := func(s, sep string) {
+		before, after, found := strings.Cut(s, sep)
+		fmt.Printf("Cut(%q, %q) = %q, %q, %v\n", s, sep, before, after, found)
+	}
+	show("Gopher", "Go")
+	show("Gopher", "ph")
+	show("Gopher", "er")
+	show("Gopher", "Badger")
+
+	// Output
+	// Cut("Gopher", "Go") = "", "pher", true
+	// Cut("Gopher", "ph") = "Go", "er", true
+	// Cut("Gopher", "er") = "Goph", "", true
+	// Cut("Gopher", "Badger") = "Gopher", "", false
+}
+
 // Asserts
 
 func AssertInt(t *testing.T, expected int, actual int) {
@@ -118,7 +172,6 @@ func AssertInt(t *testing.T, expected int, actual int) {
 		"Actual: %d\n",
 		expected, actual)
 }
-
 func AssertTrue(t *testing.T, actual bool) {
 	if actual {
 		return
