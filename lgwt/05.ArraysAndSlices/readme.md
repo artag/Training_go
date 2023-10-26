@@ -67,6 +67,19 @@ Slice allows us to have collections of any size.
 mySlice := []int{1,2,3}
 ```
 
+Или с помощью `make`:
+
+```go
+slice := make([]int, capacity)
+```
+
+`capacity` - начальный размер slice.
+
+## `append`
+
+Функция `append` берет два slice и возвращает новый объединенный slice,
+содержащий все элементы двух предыдущих slice'ов.
+
 ## Покрытие тестами. Coverage tool
 
 Запуск тестов с измерением покрытия:
@@ -74,3 +87,49 @@ mySlice := []int{1,2,3}
 ```text
 go test -cover
 ```
+
+## Variadic functions
+
+**Variadic functions** can be called with any number of trailing arguments.
+For example, `fmt.Println` is a common variadic function.
+
+```go
+func sum(nums ...int) {
+    fmt.Print(nums, " ")
+    total := 0
+
+    for _, num := range nums {
+        total += num
+    }
+    fmt.Println(total)
+}
+
+func main() {
+    sum(1, 2)                       // [1 2] 3
+    sum(1, 2, 3)                    // [1 2 3] 6
+
+    nums := []int{1, 2, 3, 4}       // [1 2 3 4] 10
+    sum(nums...)
+}
+```
+
+## Как сравнить arrays and slices. `func DeepEqual` (`reflect``)
+
+Сделать итерацию по массиву/срезу с сравнением каждого элемента. Или воспользоваться функцией
+из `reflect`:
+
+```go
+func DeepEqual(x, y any) bool
+```
+
+Данную функцию удобно использовать в тестах.
+
+DeepEqual reports whether x and y are “deeply equal,” defined as follows.
+Two values of identical type are deeply equal if one of the following cases applies.
+Values of distinct types are never deeply equal.
+
+Типы данных в `DeepEqual` не проверяются компилятором, только во время выполнения.
+
+## Дополнительно
+
+* [Go Slices: usage and internals](https://go.dev/blog/slices-intro)
