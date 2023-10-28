@@ -1,0 +1,62 @@
+package main
+
+import (
+	"encoding/csv" // To read data as string from CSV files
+	"fmt"          // To print formatted results out
+	"io"           // To provide the io.Reader interface
+	"strconv"      // To convert string data into numeric data
+)
+
+// statsFunc defines a generic statistical function
+type statsFunc func(data []float64) float64
+
+func sum(data []float64) float64 {
+	sum := 0.0
+	for _, v := range data {
+		sum += v
+	}
+	return sum
+}
+
+func avg(data []float64) float64 {
+	len := len(data)
+	if len < 1 {
+		return 0.0
+	}
+	return sum(data) / float64(len)
+}
+
+func csv2float(csvSource io.Reader, column int) ([]float64, error) {
+	// Create the CSV Reader used to read in data from CSV files
+	cr := csv.NewReader(csvSource)
+	// Adjusting for 0 based index
+	column--
+
+	// Read in all CSV data
+	allData, err := cr.ReadAll()
+	if err != nil {
+		return nil, fmt.Errorf("Cannot read data from file: %w", err)
+	}
+
+	// Looping through all records
+	var data []float64
+	for i, row := range allData {
+		if i == 0 {
+			continue // discard the first (title) line
+		}
+		// Checking number of columns in CSV file
+		if len(row) <= column {
+			return nil, fmt.Errorf("%w: File has only %d columns", ErrInvalidColumn, len(row))
+		}
+		// Try to convert data read into a float number
+		v, err := strconv.ParseFloat(row[column], 64)
+		if err != nil {
+			return nil, fmt.Errorf("%w: %s", ErrNotNumber, err)
+		}
+
+		data = append(data, v)
+	}
+
+	// Return the slice of float64 and nil error
+	return data, nil
+}
