@@ -4,6 +4,7 @@ import (
 	"fmt"
 	"strings"
 	"testing"
+	"unicode"
 )
 
 // func Compare(a, b string) int
@@ -154,11 +155,49 @@ func ExampleCut() {
 	show("Gopher", "er")
 	show("Gopher", "Badger")
 
-	// Output
+	// Output:
 	// Cut("Gopher", "Go") = "", "pher", true
 	// Cut("Gopher", "ph") = "Go", "er", true
 	// Cut("Gopher", "er") = "Goph", "", true
 	// Cut("Gopher", "Badger") = "Gopher", "", false
+}
+
+// func EqualFold(s, t string) bool
+
+func ExampleEqualFold() {
+	fmt.Println(strings.EqualFold("ГО", "го"))
+	fmt.Println(strings.EqualFold("go", "go"))
+	fmt.Println(strings.EqualFold("Go", "go"))
+	fmt.Println(strings.EqualFold("GO", "go"))
+	fmt.Println(strings.EqualFold("go ", "go"))
+
+	// Output:
+	// true
+	// true
+	// true
+	// true
+	// false
+}
+
+// func Fields(s string) []string
+
+func ExampleFields() {
+	fmt.Printf("Fields are: %q", strings.Fields("  foo bar  baz   "))
+
+	// Output:
+	// Fields are: ["foo" "bar" "baz"]
+}
+
+// func FieldsFunc(s string, f func(rune) bool) []string
+
+func ExampleFieldsFunc() {
+	f := func(c rune) bool {
+		return !unicode.IsLetter(c) && !unicode.IsNumber(c)
+	}
+	fmt.Printf("Fields are: %q", strings.FieldsFunc("  foo1;bar2,baz3 ban4...", f))
+
+	// Output:
+	// Fields are: ["foo1" "bar2" "baz3" "ban4"]
 }
 
 // Asserts
