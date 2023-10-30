@@ -9,43 +9,28 @@ import (
 
 // func Compare(a, b string) int
 
-func TestCompare(t *testing.T) {
-	t.Run(
-		"Compare a < b, result -1",
-		func(t *testing.T) {
-			a := "ABC"
-			b := "abc"
-			expected := -1
+func ExampleCompare1() {
+	fmt.Println(strings.Compare("ABC", "abc"))
 
-			actual := strings.Compare(a, b)
-
-			AssertInt(t, expected, actual)
-		})
-	t.Run(
-		"Compare a == b, result 0",
-		func(t *testing.T) {
-			a := "123"
-			b := "123"
-			expected := 0
-
-			actual := strings.Compare(a, b)
-
-			AssertInt(t, expected, actual)
-		})
-	t.Run(
-		"Compare a > b, result 1",
-		func(t *testing.T) {
-			a := "pax"
-			b := "max"
-			expected := 1
-
-			actual := strings.Compare(a, b)
-
-			AssertInt(t, expected, actual)
-		})
+	// Output:
+	// -1
 }
 
-func ExampleCompare() {
+func ExampleCompare2() {
+	fmt.Println(strings.Compare("123", "123"))
+
+	// Output:
+	// 0
+}
+
+func ExampleCompare3() {
+	fmt.Println(strings.Compare("pax", "max"))
+
+	// Output:
+	// 1
+}
+
+func ExampleCompare4() {
 	fmt.Println(strings.Compare("a", "b"))
 	fmt.Println(strings.Compare("a", "a"))
 	fmt.Println(strings.Compare("b", "a"))
@@ -181,6 +166,10 @@ func ExampleEqualFold() {
 
 // func Fields(s string) []string
 
+// Fields splits the string s around each instance of one or more
+// consecutive white space characters, as defined by unicode.IsSpace,
+// returning a slice of substrings of s
+// or an empty slice if s contains only white space.
 func ExampleFields() {
 	fmt.Printf("Fields are: %q", strings.Fields("  foo bar  baz   "))
 
@@ -190,6 +179,10 @@ func ExampleFields() {
 
 // func FieldsFunc(s string, f func(rune) bool) []string
 
+// FieldsFunc splits the string s at each run of Unicode code points c
+// satisfying f(c) and returns an array of slices of s.
+// If all code points in s satisfy f(c) or the string is empty,
+// an empty slice is returned.
 func ExampleFieldsFunc() {
 	f := func(c rune) bool {
 		return !unicode.IsLetter(c) && !unicode.IsNumber(c)
@@ -198,6 +191,51 @@ func ExampleFieldsFunc() {
 
 	// Output:
 	// Fields are: ["foo1" "bar2" "baz3" "ban4"]
+}
+
+// func HasPrefix(s, prefix string) bool
+
+// HasPrefix tests whether the string s begins with prefix.
+func ExampleHasPrefix() {
+	fmt.Println(strings.HasPrefix("Gopher", "Go"))
+	fmt.Println(strings.HasPrefix("Gopher", "C"))
+	fmt.Println(strings.HasPrefix("Gopher", ""))
+
+	// Output:
+	// true
+	// false
+	// true
+}
+
+// func HasSuffix(s, suffix string) bool
+
+// HasSuffix tests whether the string s ends with suffix.
+func ExampleHasSuffix() {
+	fmt.Println(strings.HasSuffix("Amigo", "go"))
+	fmt.Println(strings.HasSuffix("Amigo", "O"))
+	fmt.Println(strings.HasSuffix("Amigo", "Ami"))
+	fmt.Println(strings.HasSuffix("Amigo", ""))
+
+	// Output:
+	// true
+	// false
+	// false
+	// true
+}
+
+// func Index(s, substr string) int
+
+// Index returns the index of the first instance of substr in s,
+// or -1 if substr is not present in s.
+func ExampleIndex() {
+	fmt.Println(strings.Index("chicken", "ken"))
+	fmt.Println(strings.Index("chicken", "ch"))
+	fmt.Println(strings.Index("chicken", "dmr"))
+
+	// Output:
+	// 4
+	// 0
+	// -1
 }
 
 // Asserts
