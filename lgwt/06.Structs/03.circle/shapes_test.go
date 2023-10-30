@@ -7,7 +7,7 @@ import (
 
 func TestPerimeter(t *testing.T) {
 	t.Run(
-		"Find rectangle area",
+		"Find rectangle perimeter",
 		func(t *testing.T) {
 			rectangle := Rectangle{10.0, 5.0}
 			expected := 30.0
@@ -15,7 +15,7 @@ func TestPerimeter(t *testing.T) {
 			assertFloat64(t, expected, actual)
 		})
 	t.Run(
-		"Find circle area",
+		"Find circle perimeter",
 		func(t *testing.T) {
 			circle := Circle{10.0}
 			expected := 62.83185307179586
