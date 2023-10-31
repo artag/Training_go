@@ -108,21 +108,16 @@ func ExampleContainsRune() {
 
 // func Count
 
-func TestCount(t *testing.T) {
-	t.Run(
-		"count is case sensitive",
-		func(t *testing.T) {
-			actual := strings.Count("Alabama", "a")
-			AssertInt(t, 3, actual)
-		})
-}
-
+// Count counts the number of non-overlapping instances of substr in s.
+// If substr is an empty string, Count returns 1 + the number of Unicode code points in s.
 func ExampleCount() {
+	fmt.Println(strings.Count("Alabama", "a"))
 	fmt.Println(strings.Count("cheese", "e"))
 	fmt.Println(strings.Count("five", ""))  // before & after each rune (4 + 1)
 	fmt.Println(strings.Count("seven", "")) // 6
 
 	// Output:
+	// 3
 	// 3
 	// 5
 	// 6
@@ -130,6 +125,9 @@ func ExampleCount() {
 
 // func Cut(s, sep string) (before, after string, found bool)
 
+// Cut slices s around the first instance of sep, returning the text before and after sep.
+// The found result reports whether sep appears in s.
+// If sep does not appear in s, cut returns s, "", false.
 func ExampleCut() {
 	show := func(s, sep string) {
 		before, after, found := strings.Cut(s, sep)
@@ -149,6 +147,9 @@ func ExampleCut() {
 
 // func EqualFold(s, t string) bool
 
+// EqualFold reports whether s and t, interpreted as UTF-8 strings,
+// are equal under Unicode case-folding,
+// which is a more general form of case-insensitivity.
 func ExampleEqualFold() {
 	fmt.Println(strings.EqualFold("ГО", "го"))
 	fmt.Println(strings.EqualFold("go", "go"))
@@ -235,6 +236,49 @@ func ExampleIndex() {
 	// Output:
 	// 4
 	// 0
+	// -1
+}
+
+// func IndexAny(s, chars string) int
+
+// IndexAny returns the index of the first instance of any Unicode code point from chars in s,
+// or -1 if no Unicode code point from chars is present in s.
+func ExampleIndexAny() {
+	fmt.Println(strings.IndexAny("chicken", "aeiouy"))
+	fmt.Println(strings.IndexAny("crwth", "aeiouy"))
+
+	// Output:
+	// 2
+	// -1
+}
+
+// func IndexByte(s string, c byte) int
+
+// IndexByte returns the index of the first instance of c in s, or -1 if c is not present in s.
+func ExampleIndexByte() {
+	fmt.Println(strings.IndexByte("golang", 'g'))
+	fmt.Println(strings.IndexByte("gophers", 'h'))
+	fmt.Println(strings.IndexByte("golang", 'x'))
+
+	// Output:
+	// 0
+	// 3
+	// -1
+}
+
+// func IndexFunc(s string, f func(rune) bool) int
+
+// IndexFunc returns the index into s of the first Unicode code point satisfying f(c),
+// or -1 if none do.
+func ExampleIndexFunc() {
+	f := func(c rune) bool {
+		return unicode.Is(unicode.Cyrillic, c)
+	}
+	fmt.Println(strings.IndexFunc("Hello, мир", f))
+	fmt.Println(strings.IndexFunc("Hello, world", f))
+
+	// Output:
+	// 7
 	// -1
 }
 
