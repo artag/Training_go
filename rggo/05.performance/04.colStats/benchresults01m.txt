@@ -1,0 +1,7 @@
+goos: linux
+goarch: amd64
+pkg: rggo/performance/colStats
+cpu: Intel(R) Pentium(R) Silver N5030 CPU @ 1.10GHz
+BenchmarkRun-4   	      10	 788504290 ns/op	214886069 B/op	 2527034 allocs/op
+PASS
+ok  	rggo/performance/colStats	8.688s
