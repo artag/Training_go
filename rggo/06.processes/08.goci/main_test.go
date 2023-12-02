@@ -31,6 +31,8 @@ func TestRun(t *testing.T) {
 			out: "Go Build: SUCCESS\n" +
 				"Go Test: SUCCESS\n" +
 				"Gofmt: SUCCESS\n" +
+				"Gocyclo: SUCCESS\n" +
+				"Code linting: SUCCESS\n" +
 				"Git Push: SUCCESS\n",
 			expErr:   nil,
 			setupGit: true,
@@ -42,6 +44,8 @@ func TestRun(t *testing.T) {
 			out: "Go Build: SUCCESS\n" +
 				"Go Test: SUCCESS\n" +
 				"Gofmt: SUCCESS\n" +
+				"Gocyclo: SUCCESS\n" +
+				"Code linting: SUCCESS\n" +
 				"Git Push: SUCCESS\n",
 			expErr:   nil,
 			setupGit: false,
@@ -60,6 +64,22 @@ func TestRun(t *testing.T) {
 			proj:     "./testdata/toolFmtErr",
 			out:      "",
 			expErr:   &stepErr{step: "go fmt"},
+			setupGit: false,
+			mockCmd:  nil,
+		},
+		{
+			name:     "failCyclo",
+			proj:     "./testdata/toolCycloErr",
+			out:      "",
+			expErr:   &stepErr{step: "go cyclo"},
+			setupGit: false,
+			mockCmd:  nil,
+		},
+		{
+			name:     "failLint",
+			proj:     "./testdata/toolLintErr",
+			out:      "",
+			expErr:   &stepErr{step: "code linting"},
 			setupGit: false,
 			mockCmd:  nil,
 		},

@@ -32,6 +32,26 @@
             "message": "Gofmt: SUCCESS"
         },
         {
+            "type": 1,
+            "name":"go cyclo",
+            "exe":"gocyclo",
+            "args":[
+                "-over",
+                "9",
+                "."
+            ],
+            "message": "Gocyclo: SUCCESS"
+        },
+        {
+            "type": 1,
+            "name":"code linting",
+            "exe":"golangci-lint",
+            "args":[
+                "run"
+            ],
+            "message": "Code linting: SUCCESS"
+        },
+        {
             "type": 2,
             "name":"git push",
             "exe":"git",
