@@ -1,0 +1,10 @@
+{
+    "Name":"go fmt",
+    "Exe":"gofmt",
+    "Args":[
+        "-l",
+        "."
+    ],
+    "Message":"Gofmt: SUCCESS",
+    "Proj":"testdata/tool"
+}

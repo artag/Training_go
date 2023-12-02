@@ -1,0 +1,11 @@
+{
+    "Name":"go build",
+    "Exe":"go",
+    "Args":[
+        "build",
+        ".",
+        "errors"
+    ],
+    "Message": "Go Build: SUCCESS",
+    "Proj":"testdata/tool"
+}

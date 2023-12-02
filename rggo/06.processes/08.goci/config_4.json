@@ -1,0 +1,12 @@
+{
+    "Name":"git push",
+    "Exe":"git",
+    "Args":[
+        "push",
+        "origin",
+        "master"
+    ],
+    "Message": "Git Push: SUCCESS",
+    "Proj":"testdata/tool",
+    "Timeout":10000000000
+}

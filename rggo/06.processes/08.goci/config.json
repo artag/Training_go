@@ -1,0 +1,47 @@
+{
+    "steps" : [
+        {
+            "type": 0,
+            "name":"go build",
+            "exe":"go",
+            "args":[
+                "build",
+                ".",
+                "errors"
+            ],
+            "message": "Go Build: SUCCESS"
+        },
+        {
+            "type": 0,
+            "name":"go test",
+            "exe":"go",
+            "args":[
+                "test",
+                "-v"
+            ],
+            "message": "Go Test: SUCCESS"
+        },
+        {
+            "type": 1,
+            "name":"go fmt",
+            "exe":"gofmt",
+            "args":[
+                "-l",
+                "."
+            ],
+            "message": "Gofmt: SUCCESS"
+        },
+        {
+            "type": 2,
+            "name":"git push",
+            "exe":"git",
+            "args":[
+                "push",
+                "origin",
+                "master"
+            ],
+            "message": "Git Push: SUCCESS",
+            "timeout": 10000000000
+        }
+    ]
+}

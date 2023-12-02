@@ -1,0 +1,10 @@
+{
+    "Name":"go test",
+    "Exe":"go",
+    "Args":[
+        "test",
+        "-v"
+    ],
+    "Message":"Go Test: SUCCESS",
+    "Proj":"testdata/tool"
+}
