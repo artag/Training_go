@@ -75,5 +75,7 @@ func (hl *HostsList) Save(hostsFile string) error {
 		output += fmt.Sprintln(h)
 	}
 
+	// 644 means you can read and write the file or directory and
+	// other users can only read it. Suitable for public text files.
 	return os.WriteFile(hostsFile, []byte(output), 0644)
 }

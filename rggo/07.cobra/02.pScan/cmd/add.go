@@ -1,9 +1,9 @@
 package cmd
 
 import (
-	"fmt"
-	"io"
-	"os"
+	"fmt" // To use format fmt.Fprintln
+	"io"  // To use io.Writer interface
+	"os"  // To use os.Stdout for outputs
 	"rggo/cobra/pScan/scan"
 
 	"github.com/spf13/cobra"
@@ -11,7 +11,7 @@ import (
 
 // addCmd represents the add command
 var addCmd = &cobra.Command{
-	Use:          "add <host 1>...<host n>",
+	Use:          "add <host1>...<hostn>",
 	Aliases:      []string{"a"},
 	Short:        "Add new host(s) to list",
 	SilenceUsage: true,

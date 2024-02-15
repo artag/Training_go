@@ -1,9 +1,9 @@
 package cmd
 
 import (
-	"fmt"
-	"io"
-	"os"
+	"fmt" // To use format fmt.Fprintln
+	"io"  // To use io.Writer interface
+	"os"  // To use os.Stdout for outputs
 	"rggo/cobra/pScan/scan"
 
 	"github.com/spf13/cobra"
@@ -11,7 +11,7 @@ import (
 
 // deleteCmd represents the delete command
 var deleteCmd = &cobra.Command{
-	Use:          "delete <host 1>...<host n>",
+	Use:          "delete <host1>...<hostn>",
 	Aliases:      []string{"d"},
 	Short:        "Delete host(s) from list",
 	SilenceUsage: true,
