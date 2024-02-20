@@ -22,6 +22,16 @@ type Results struct {
 	PortStates []PortState
 }
 
+type ScanParameters struct {
+	Ports    []int
+	Settings ScanSettings
+}
+
+type ScanSettings struct {
+	UDPScanMode bool
+	TimeoutMs   int
+}
+
 // Converts the boolean value of state to a human readable string
 func (s state) String() string {
 	if s {
@@ -30,8 +40,8 @@ func (s state) String() string {
 	return "closed"
 }
 
-// Performs a port scan on a single TCP port
-func scanPort(host string, port int) PortState {
+// Performs a port scan on a single TCP or UDP port
+func scanPort(host string, port int, settings ScanSettings) PortState {
 	p := PortState{
 		Port: port,
 	}
@@ -39,17 +49,27 @@ func scanPort(host string, port int) PortState {
 	portStr := fmt.Sprintf("%d", port)
 	address := net.JoinHostPort(host, portStr)
 
-	timeout := 1 * time.Second
-	scanConn, err := net.DialTimeout("tcp", address, timeout)
+	scanTimeout := time.Duration(settings.TimeoutMs) * time.Millisecond
+
+	var scanConn net.Conn
+	var err error
+
+	if settings.UDPScanMode {
+		scanConn, err = net.DialTimeout("udp", address, scanTimeout)
+	} else {
+		scanConn, err = net.DialTimeout("tcp", address, scanTimeout)
+	}
+
 	if err != nil {
 		return p // If error - port closed
 	}
+
 	scanConn.Close()
 	p.Open = true // Port open
 	return p
 }
 
-func Run(hl *HostsList, ports []int) []Results {
+func Run(hl *HostsList, params ScanParameters) []Results {
 	res := make([]Results, 0, len(hl.Hosts))
 	for _, h := range hl.Hosts {
 		r := Results{
@@ -64,8 +84,8 @@ func Run(hl *HostsList, ports []int) []Results {
 		}
 
 		// Scan ports
-		for _, port := range ports {
-			portState := scanPort(h, port)
+		for _, port := range params.Ports {
+			portState := scanPort(h, port, params.Settings)
 			r.PortStates = append(r.PortStates, portState)
 		}
 

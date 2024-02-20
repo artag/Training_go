@@ -63,8 +63,16 @@ func TestRunHostFound(t *testing.T) {
 		}
 	}
 
+	scanParams := scan.ScanParameters{
+		Ports: ports,
+		Settings: scan.ScanSettings{
+			UDPScanMode: false,
+			TimeoutMs:   1000,
+		},
+	}
+
 	// Act
-	res := scan.Run(hl, ports)
+	res := scan.Run(hl, scanParams)
 
 	// Assert. Verify results for HostFound test
 	if len(res) != 1 {
@@ -100,8 +108,16 @@ func TestRunHostNotFound(t *testing.T) {
 	hl := &scan.HostsList{}
 	hl.Add(host)
 
+	scanParams := scan.ScanParameters{
+		Ports: []int{},
+		Settings: scan.ScanSettings{
+			UDPScanMode: false,
+			TimeoutMs:   1000,
+		},
+	}
+
 	// Act
-	res := scan.Run(hl, []int{})
+	res := scan.Run(hl, scanParams)
 
 	// Assert. Verify results for HostNotFound test
 	if len(res) != 1 {

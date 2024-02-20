@@ -14,6 +14,16 @@ import (
 	"github.com/spf13/viper"
 )
 
+const (
+	showAll showOption = iota
+	filterOpen
+	filterClosed
+)
+
+type showOption int
+
+var filter showOption = showAll
+
 // scanCmd represents the scan command
 var scanCmd = &cobra.Command{
 	Use:   "scan",
@@ -24,13 +34,41 @@ var scanCmd = &cobra.Command{
 		if err != nil {
 			return err
 		}
+		udpMode, err := cmd.Flags().GetBool("udp")
+		if err != nil {
+			return err
+		}
+
+		timeout, err := cmd.Flags().GetInt("timeout")
+		if err != nil {
+			return err
+		}
+
+		filterFlag, err := cmd.Flags().GetString("show")
+		if err != nil {
+			return err
+		}
+		if strings.ToLower(filterFlag) == "open" {
+			filter = filterOpen
+		}
+		if strings.ToLower(filterFlag) == "closed" {
+			filter = filterClosed
+		}
 
 		ports, err := parsePorts(portsStr)
 		if err != nil {
 			return err
 		}
 
-		return scanAction(os.Stdout, hostsFile, ports)
+		scanParams := scan.ScanParameters{
+			Ports: ports,
+			Settings: scan.ScanSettings{
+				UDPScanMode: udpMode,
+				TimeoutMs:   timeout,
+			},
+		}
+
+		return scanAction(os.Stdout, hostsFile, scanParams)
 	},
 }
 
@@ -38,15 +76,18 @@ func init() {
 	rootCmd.AddCommand(scanCmd)
 	// 22, 80, 443 - port values by default
 	scanCmd.Flags().StringP("ports", "p", "22, 80, 443", "ports to scan")
+	scanCmd.Flags().Bool("udp", false, "execute UDP port scans")
+	scanCmd.Flags().IntP("timeout", "t", 1000, "timeout in milliseconds for port scans")
+	scanCmd.Flags().StringP("show", "s", "", "show only 'open' or 'closed' ports")
 }
 
-func scanAction(out io.Writer, hostsFile string, ports []int) error {
+func scanAction(out io.Writer, hostsFile string, parameters scan.ScanParameters) error {
 	hl := &scan.HostsList{}
 	if err := hl.Load(hostsFile); err != nil {
 		return err
 	}
 
-	results := scan.Run(hl, ports)
+	results := scan.Run(hl, parameters)
 	return printResults(out, results)
 }
 
@@ -62,7 +103,18 @@ func printResults(out io.Writer, results []scan.Results) error {
 		message += fmt.Sprintln()
 
 		for _, p := range r.PortStates {
-			message += fmt.Sprintf("\t%d: %s\n", p.Port, p.Open)
+			switch filter {
+			case filterOpen:
+				if p.Open {
+					message += fmt.Sprintf("\t%d: %s\n", p.Port, p.Open)
+				}
+			case filterClosed:
+				if !p.Open {
+					message += fmt.Sprintf("\t%d: %s\n", p.Port, p.Open)
+				}
+			default:
+				message += fmt.Sprintf("\t%d: %s\n", p.Port, p.Open)
+			}
 		}
 
 		message += fmt.Sprintln()

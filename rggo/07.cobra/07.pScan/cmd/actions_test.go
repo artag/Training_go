@@ -157,8 +157,16 @@ func TestIntegration(t *testing.T) {
 		t.Fatalf("Expected no error, got %q\n", err)
 	}
 
+	scanParams := scan.ScanParameters{
+		Ports: nil,
+		Settings: scan.ScanSettings{
+			UDPScanMode: false,
+			TimeoutMs:   1000,
+		},
+	}
+
 	// Scan hosts
-	if err := scanAction(&out, tf, nil); err != nil {
+	if err := scanAction(&out, tf, scanParams); err != nil {
 		t.Fatalf("Expected no error, got %q\n", err)
 	}
 
@@ -213,8 +221,16 @@ func TestScanAction(t *testing.T) {
 	// Define var to capture scan output
 	var out bytes.Buffer
 
+	scanParams := scan.ScanParameters{
+		Ports: ports,
+		Settings: scan.ScanSettings{
+			UDPScanMode: false,
+			TimeoutMs:   1000,
+		},
+	}
+
 	// Execute scan and capture output
-	if err := scanAction(&out, tf, ports); err != nil {
+	if err := scanAction(&out, tf, scanParams); err != nil {
 		t.Fatalf("Expected no error, got %q\n", err)
 	}
 	// Test scan output
