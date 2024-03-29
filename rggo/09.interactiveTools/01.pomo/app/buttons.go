@@ -36,7 +36,7 @@ func newButtonSet(
 		}
 
 		end := func(pomodoro.Interval) {
-			w.update([]int{}, "", "Noting running...", "", redrawCh)
+			w.update([]int{}, "", "Nothing running...", "", redrawCh)
 		}
 
 		periodic := func(i pomodoro.Interval) {

@@ -129,6 +129,7 @@ func tick(
 	id int64,
 	config *IntervalConfig,
 	start, periodic, end Callback) error {
+
 	ticker := time.NewTicker(time.Second)
 	defer ticker.Stop()
 
