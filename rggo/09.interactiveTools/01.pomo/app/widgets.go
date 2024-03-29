@@ -115,13 +115,15 @@ func newDonut(
 
 	// Goroutine to update Donut timer
 	go func() {
-		select {
-		case d := <-donutUpdater:
-			if d[0] <= d[1] {
-				errorCh <- don.Absolute(d[0], d[1])
+		for {
+			select {
+			case d := <-donutUpdater:
+				if d[0] <= d[1] {
+					errorCh <- don.Absolute(d[0], d[1])
+				}
+			case <-ctx.Done():
+				return
 			}
-		case <-ctx.Done():
-			return
 		}
 	}()
 
