@@ -183,7 +183,7 @@ func (r *dbRepo) Breaks(n int) ([]pomodoro.Interval, error) {
 // Return a daily summary
 func (r *dbRepo) CategorySummary(day time.Time, filter string) (time.Duration, error) {
 	r.RLock()
-	defer r.Unlock()
+	defer r.RUnlock()
 
 	// Define SELECT query for daily summary
 	stmt :=
@@ -203,5 +203,3 @@ func (r *dbRepo) CategorySummary(day time.Time, filter string) (time.Duration, e
 
 	return d, err
 }
-
-// Query DB for breaks

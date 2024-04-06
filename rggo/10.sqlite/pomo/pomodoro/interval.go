@@ -44,6 +44,8 @@ type Repository interface {
 	Last() (Interval, error)
 	// Retrieve intervals of type break
 	Breaks(n int) ([]Interval, error)
+	// Return a daily summary
+	CategorySummary(day time.Time, filter string) (time.Duration, error)
 }
 
 // Errors

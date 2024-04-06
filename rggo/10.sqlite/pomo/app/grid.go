@@ -11,6 +11,7 @@ import (
 func newGrid(
 	b *buttonSet,
 	w *widgets,
+	s *summary,
 	t terminalapi.Terminal,
 ) (*container.Container, error) {
 
@@ -69,7 +70,25 @@ func newGrid(
 
 	// Add third row
 	builder.Add(
-		grid.RowHeightPerc(60),
+		grid.RowHeightPerc(
+			60,
+			grid.ColWidthPerc(
+				30,
+				grid.Widget(
+					s.bcDay,
+					container.Border(linestyle.Light),
+					container.BorderTitle("Daily Summary (minutes)"),
+				),
+			),
+			grid.ColWidthPerc(
+				70,
+				grid.Widget(
+					s.lcWeekly,
+					container.Border(linestyle.Light),
+					container.BorderTitle("Weekly Summary"),
+				),
+			),
+		),
 	)
 
 	gridOpts, err := builder.Build()
